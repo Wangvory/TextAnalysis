@@ -1,7 +1,8 @@
-"""main.py
+# -*- coding: utf-8 -*-
+"""
+Spyder Editor
 
-Code scaffolding
-
+This is a temporary script file.
 """
 
 import os
@@ -11,59 +12,135 @@ from nltk.corpus import wordnet as wn
 from nltk.corpus import PlaintextCorpusReader
 from nltk.probability import FreqDist
 from nltk.text import Text
+from nltk.corpus import stopwords
+os.getcwd()
 
-
+## Reading source data
 def read_text(path):
-    pass
+    if os.path.isdir(path):
+        raw=PlaintextCorpusReader(path, '.*').raw()
+        tokens = nltk.tokenize.word_tokenize(raw)
+    else:
+        f = open(path)
+        raw=f.read()
+        tokens = nltk.tokenize.word_tokenize(raw)
+        
+    return Text(tokens)
 
 
+## Generate simple statistics
 def token_count(text):
-    pass
+    count=len(text)
+    return count
 
 
 def type_count(text):
-    pass
-
+    raw = set(text)
+    ty=len(raw)
+    return ty
 
 def sentence_count(text):
-    pass
-
+    re_string=' '.join(text)
+    numsent = nltk.tokenize.sent_tokenize(re_string)
+    count=len(numsent)
+    return count
 
 def most_frequent_content_words(text):
-    pass
+    text_clean = [word for word in text if word.strip(',.<>?!;:\'"|`~@#$%^&*()-[]{}+-——=').isalpha()]
+    stopword = nltk.corpus.stopwords.words('english')
+    content = [w for w in text_clean if w.lower() not in stopword]
+    fdist = FreqDist(content)
+    return fdist.most_common(25)
 
 
 def most_frequent_bigrams(text):
-    pass
-
+    text_clean = [word for word in text if word.strip(',.<>?!;:\'"|`~@#$%^&*()-[]{}+-——=').isalpha()]
+    stopword = nltk.corpus.stopwords.words('english')
+    content = [w for w in text_clean if w.lower() not in stopword]
+    bgs = nltk.bigrams(content)
+    fdist = FreqDist(bgs)
+    return fdist.most_common(25)
 
 class Vocabulary():
 
     def __init__(self, text):
-        pass
+        self.text=text
 
     def frequency(self, word):
-        pass
+        fdist = FreqDist(self.text)
+        return fdist[word]
 
     def pos(self, word):
-        pass
+        self.w=word
+        if len(wn.synsets(self.w))==0:
+            final = None
+        else: final = wn.synsets(self.w)[0].pos()
+        return final
 
     def gloss(self, word):
-        pass
+        self.w=word
+        if len(wn.synsets(self.w))==0:
+            return None
+        else:
+            syns= wn.synsets(self.w)[0]
+            return syns.definition()
 
-    def quick(self, word):
-        pass
+    def kwic(self, word):
+        self.w=word
+        self.text.concordance(self.w)
 
 
-categories = ('adventure', 'fiction', 'government', 'humor', 'news')
-
+def dot(A,B): 
+    return (sum(a*b for a,b in zip(A,B)))
+def cosine(a,b):
+    cos=dot(a,b)/((dot(a,a)**0.5)*(dot(b,b)**0.5))
+    return round(cos, 2)
 
 def compare_to_brown(text):
-    pass
+    vocab = Vocabulary(text)
+    vector_adventure=[]
+    vector_fiction=[]
+    vector_humor=[]
+    vector_government=[]
+    vector_news=[]
+    
+    vector_adventure_brown=[]
+    vector_fiction_brown=[]
+    vector_humor_brown=[]
+    vector_government_brown=[]
+    vector_news_brown=[]
+    
+    adventure=brown.words(categories='adventure')
+    fiction=brown.words(categories='fiction')
+    government=brown.words(categories='government')
+    humor=brown.words(categories='humor')
+    news=brown.words(categories='news')
+    for (word, freq) in most_frequent_content_words(news)[:300]:
+        vector_news.append(vocab.frequency(word))
+        vector_news_brown.append(freq)
+    for (word, freq) in most_frequent_content_words(government)[:300]:
+        vector_government.append(vocab.frequency(word))
+        vector_government_brown.append(freq)
+    for (word, freq) in most_frequent_content_words(humor)[:300]:
+        vector_humor.append(vocab.frequency(word))
+        vector_humor_brown.append(freq)
+    for (word, freq) in most_frequent_content_words(fiction)[:300]:
+        vector_fiction.append(vocab.frequency(word))
+        vector_fiction_brown.append(freq)
+    for (word, freq) in most_frequent_content_words(adventure)[:300]:
+        vector_adventure.append(vocab.frequency(word))
+        vector_adventure_brown.append(freq)
+    print("adventure",cosine(vector_adventure,vector_adventure_brown))
+    print("fiction",cosine(vector_fiction,vector_fiction_brown))
+    print("humor",cosine(vector_humor,vector_humor_brown))
+    print("government",cosine(vector_government,vector_government_brown))
+    print("news",cosine(vector_news,vector_news_brown))
 
 
 
-if __name__ == '__main__':
 
-    text = read_text('data/grail.txt')
-    token_count(text)
+
+
+
+
+
